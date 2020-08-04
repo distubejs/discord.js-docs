@@ -12,6 +12,7 @@ const docCache = new Map()
 
 const DJS = 'discordjs'
 const AKAIRO = 'discord-akairo'
+const DISTUBE = 'DisTube'
 
 function dissectURL (url) {
   const parts = url.slice(34).split('/')
@@ -46,6 +47,7 @@ class Doc extends DocBase {
   }
 
   get baseURL () {
+    if (this.repo === DISTUBE) return "https://distube.js.org"
     switch (this.project) {
       case DJS: return 'https://discord.js.org'
       case AKAIRO: return 'https://discord-akairo.github.io'
@@ -55,6 +57,7 @@ class Doc extends DocBase {
 
   get baseDocsURL () {
     if (!this.baseURL) return null
+    if (this.repo === DISTUBE) return this.baseURL
     const repo = ['discord.js', AKAIRO].includes(this.repo) ? 'main' : this.repo
     return `${this.baseURL}/#/docs/${repo}/${this.branch}`
   }
@@ -65,6 +68,7 @@ class Doc extends DocBase {
   }
 
   get color () {
+    if (this.repo === DISTUBE) return 0x00ffff
     switch (this.project) {
       case DJS: return 0x2296f3
       case AKAIRO: return 0x87202f
@@ -147,7 +151,8 @@ class Doc extends DocBase {
 
   baseEmbed () {
     const title = {
-      'discord.js': 'Discord.js Docs',
+      'DisTube': 'DisTube Documentation',
+      'discord.js': 'Discord.js Documentation',
       'commando': 'Commando Docs',
       'rpc': 'RPC Docs',
       'discord-akairo': 'Akairo Docs',
