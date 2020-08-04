@@ -63,6 +63,7 @@ class Doc extends DocBase {
   }
 
   get icon () {
+    if (this.repo === DISTUBE) return "https://cdn.jsdelivr.net/gh/skick1234/MaBu-CDN@4.1/DisTube/img/DisTube.png";
     if (!this.baseURL) return null
     return `${this.baseURL}/favicon.ico`
   }
