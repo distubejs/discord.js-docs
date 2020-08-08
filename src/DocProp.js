@@ -11,6 +11,10 @@ class DocProp extends DocElement {
   get formattedName () {
     return [this.parent.name, this.static ? '.' : '#', this.name].join('')
   }
+
+  get embedName() {
+    return this.optional ? `\`[${this.name}]\`` : `\`${this.name}\``
+  }
 }
 
 module.exports = DocProp

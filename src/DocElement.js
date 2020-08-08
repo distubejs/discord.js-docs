@@ -1,10 +1,10 @@
 const DocBase = require('./DocBase')
 const { stripIndents } = require('common-tags')
 
-const DESCRIPTION_LIMIT = 1500
+const DESCRIPTION_LIMIT = 1000
 
 class DocElement extends DocBase {
-  constructor (doc, docType, data, parent) {
+  constructor(doc, docType, data, parent) {
     super(data)
     this.doc = doc
     this.docType = docType
@@ -23,12 +23,13 @@ class DocElement extends DocBase {
     this.access = data.access || 'public'
   }
 
-  get url () {
+  get url() {
     if (!this.doc.baseDocsURL) return null
 
     let path;
     if (this.doc.repo === "DisTube") path = this.parent
-      ? `${this.parent.name}#${this.static ? '.' : this.docType === DocBase.types.EVENT ? "event:" : ''}${this.name}`
+      ? this.parent.docType === DocBase.types.TYPEDEF ? `global#${this.parent.name}`
+        : `${this.parent.name}#${this.static ? '.' : this.docType === DocBase.types.EVENT ? "event:" : ''}${this.name}`
       : `${this.docType === DocBase.types.TYPEDEF ? "global#" : ""}${this.name}`
     else path = this.parent
       ? `${this.parent.docType}/${this.parent.name}?scrollTo=${this.static ? 's-' : ''}${this.name}`
@@ -37,18 +38,18 @@ class DocElement extends DocBase {
     return `${this.doc.baseDocsURL}/${path}`
   }
 
-  get sourceURL () {
-    if (!this.doc.repoURL) return null
+  get sourceURL() {
+    if (!this.doc.repoURL || !this.meta) return null
 
     const { path, file, line } = this.meta
     return `${this.doc.repoURL}/${path}/${file}#L${line}`
   }
 
-  get formattedName () {
+  get formattedName() {
     return this.name
   }
 
-  get formattedDescription () {
+  get formattedDescription() {
     let result = this.formatText(this.description)
 
     if (result.length > DESCRIPTION_LIMIT) {
@@ -59,31 +60,31 @@ class DocElement extends DocBase {
     return result
   }
 
-  get formattedReturn () {
+  get formattedReturn() {
     return this.formatText(this.returns)
   }
 
-  get formattedType () {
+  get formattedType() {
     return `${this.nullable ? '?' : ''}${this.doc.formatType(this.type)}`
   }
 
-  get formattedExtends () {
+  get formattedExtends() {
     return `(extends ${this.formatInherits(this.extends)})`
   }
 
-  get formattedImplements () {
+  get formattedImplements() {
     return `(implements ${this.formatInherits(this.implements)})`
   }
 
-  get link () {
+  get link() {
     return `[${this.formattedName}](${this.url})`
   }
 
-  get static () {
+  get static() {
     return this.scope === 'static'
   }
 
-  get typeElement () {
+  get typeElement() {
     if (!this.type) return null
 
     return this.type
@@ -92,7 +93,7 @@ class DocElement extends DocBase {
       .find(elem => elem)
   }
 
-  embed (options = {}) {
+  embed(options = {}) {
     const embed = this.doc.baseEmbed()
     let name = `__**${this.link}**__`
 
@@ -105,15 +106,17 @@ class DocElement extends DocBase {
     embed.url = this.url
     embed.fields = []
     this.formatEmbed(embed, options)
-    embed.fields.push({
-      name: '\u200b',
-      value: `[View source](${this.sourceURL})`
-    })
+    if (this.sourceURL)
+      embed.fields.push({
+        name: '\u200b',
+        value: `[View source](${this.sourceURL})`
+      })
 
     return embed
   }
 
-  formatEmbed (embed, options = {}) {
+  formatEmbed(embed, options = {}) {
+    this.attachConstructor(embed)
     this.attachProps(embed, options)
     this.attachMethods(embed, options)
     this.attachEvents(embed)
@@ -123,20 +126,81 @@ class DocElement extends DocBase {
     this.attachExamples(embed)
   }
 
-  attachProps (embed, { excludePrivateElements } = {}) {
+  attachConstructor(embed) {
+    if (!this.construct || (!this.construct.params && !this.construct.examples)) return;
+    const formatDescription = (description) => {
+      let result = this.formatText(description)
+      if (result.length > DESCRIPTION_LIMIT) {
+        result = result.slice(0, DESCRIPTION_LIMIT) +
+          `...\nDescription truncated. Click header link above to read full description.`
+      }
+      return result
+    }
+
+    embed.fields.push({
+      name: 'Constructor',
+      value: `${formatDescription(this.construct.description)}\n\`\`\`js\nnew ${this.doc.repo === "DisTube" ? "" : `Discord.`}${this.construct.name}(${this.construct.params ? this.construct.params.map(p => p.name).join(", ") : ""})\`\`\``
+    })
+
+    if (this.construct.params) {
+      const params = this.construct.params.map(param => {
+        return stripIndents`
+          \`${param.optional ? `[${param.name}]` : param.name}\` ${param.nullable ? '?' : ''}${this.doc.formatType(param.type.flat(5))}
+          ${formatDescription(param.description)}
+        `
+      })
+      const shift = params.shift()
+      embed.fields.push({ name: 'Params', value: shift, inline: true })
+
+      while (params.length > 0) {
+        const shift = params.shift()
+        embed.fields.push({ name: '\u200b', value: shift, inline: true })
+      }
+      let count = (3 - embed.fields.slice(embed.fields.map(v => !!v.inline).lastIndexOf(false) + 1).length % 3) % 3
+      while (count--)
+        embed.fields.push({ name: '\u200b', value: '\u200b', inline: true })
+    }
+
+    if (this.construct.examples) {
+      embed.fields.push({
+        name: 'Examples',
+        value: this.construct.examples.map(ex => `\`\`\`js\n${ex}\n\`\`\``).join('\n')
+      })
+    }
+  }
+
+  attachProps(embed, { excludePrivateElements } = {}) {
     if (!this.props) return
 
     let props = this.props
     if (excludePrivateElements) props = props.filter(prop => prop.access !== 'private')
     if (props.length === 0) return
 
-    embed.fields.push({
+    if (!this.methods && !this.events) {
+      props = props.map(prop => {
+        return stripIndents`
+          ${prop.embedName} ${prop.formattedType}
+          ${prop.formattedDescription}
+        `
+      })
+
+      const shift = props.shift();
+      embed.fields.push({ name: 'Properties', value: shift, inline: true })
+
+      while (props.length > 0) {
+        const shift = props.shift()
+        embed.fields.push({ name: '\u200b', value: shift, inline: true })
+      }
+      let count = (3 - embed.fields.slice(embed.fields.map(v => !!v.inline).lastIndexOf(false) + 1).length % 3) % 3
+      while (count--)
+        embed.fields.push({ name: '\u200b', value: '\u200b', inline: true })
+    } else embed.fields.push({
       name: 'Properties',
       value: props.map(prop => `\`${prop.name}\``).join(' ')
     })
   }
 
-  attachMethods (embed, { excludePrivateElements } = {}) {
+  attachMethods(embed, { excludePrivateElements } = {}) {
     if (!this.methods) return
 
     let methods = this.methods
@@ -149,7 +213,7 @@ class DocElement extends DocBase {
     })
   }
 
-  attachEvents (embed) {
+  attachEvents(embed) {
     if (!this.events) return
     embed.fields.push({
       name: 'Events',
@@ -157,7 +221,7 @@ class DocElement extends DocBase {
     })
   }
 
-  attachParams (embed) {
+  attachParams(embed) {
     if (!this.params) return
     const params = this.params.map(param => {
       return stripIndents`
@@ -166,16 +230,19 @@ class DocElement extends DocBase {
       `
     })
 
-    const slice = params.splice(0, 5)
-    embed.fields.push({ name: 'Params', value: slice.join('\n\n') })
+    const shift = params.shift()
+    embed.fields.push({ name: 'Params', value: shift, inline: true })
 
     while (params.length > 0) {
-      const slice = params.splice(0, 5)
-      embed.fields.push({ name: '\u200b', value: slice.join('\n\n') })
+      const shift = params.shift()
+      embed.fields.push({ name: '\u200b', value: shift, inline: true })
     }
+    let count = (3 - embed.fields.slice(embed.fields.map(v => !!v.inline).lastIndexOf(false) + 1).length % 3) % 3
+    while (count--)
+      embed.fields.push({ name: '\u200b', value: '\u200b', inline: true })
   }
 
-  attachReturn (embed) {
+  attachReturn(embed) {
     if (!this.returns) return
     embed.fields.push({
       name: 'Returns',
@@ -183,7 +250,7 @@ class DocElement extends DocBase {
     })
   }
 
-  attachType (embed) {
+  attachType(embed) {
     if (!this.type) return
     embed.fields.push({
       name: 'Type',
@@ -191,7 +258,7 @@ class DocElement extends DocBase {
     })
   }
 
-  attachExamples (embed) {
+  attachExamples(embed) {
     if (!this.examples) return
     embed.fields.push({
       name: 'Examples',
@@ -199,7 +266,7 @@ class DocElement extends DocBase {
     })
   }
 
-  toJSON () {
+  toJSON() {
     const json = {
       name: this.name,
       description: this.description,
@@ -217,7 +284,7 @@ class DocElement extends DocBase {
     return json
   }
 
-  formatInherits (inherits) {
+  formatInherits(inherits) {
     inherits = Array.isArray(inherits[0])
       ? inherits.map(element => element.flat(5)) // docgen 0.9.0 format
       : inherits.map(baseClass => [baseClass]) // docgen 0.8.0 format
@@ -225,12 +292,12 @@ class DocElement extends DocBase {
     return inherits.map(baseClass => this.doc.formatType(baseClass)).join(' and ')
   }
 
-  formatText (text) {
+  formatText(text) {
     if (!text) return ''
 
     return text
       .replace(/\{@link (.+?)\}/g, (match, name) => {
-        const element = this.doc.get(...name.split(/\.|#/))
+        const element = this.doc.get(...name.replace("event:", "").split(/\.|#/))
         return element ? element.link : name
       })
       .replace(/(```[^]+?```)|(^[*-].+$)?\n(?![*-])/gm, (match, codeblock, hasListBefore) => {
@@ -244,7 +311,7 @@ class DocElement extends DocBase {
       .replace(/<a href="(.+)">(.+)<\/a>/g, '[$2]($1)') // format anchor tags
   }
 
-  static get types () {
+  static get types() {
     return DocBase.types
   }
 }

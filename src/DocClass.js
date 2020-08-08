@@ -9,6 +9,7 @@ class DocClass extends DocElement {
     this.extends = data.extends || null
     this.implements = data.implements || null
     this.construct = data.construct
+    this.examples = data.examples || null
 
     this.adoptAll(data.props, DocProp)
     this.adoptAll(data.methods, DocMethod)
