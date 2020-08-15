@@ -139,7 +139,7 @@ class DocElement extends DocBase {
 
     embed.fields.push({
       name: 'Constructor',
-      value: `${formatDescription(this.construct.description)}\n\`\`\`js\nnew ${this.doc.repo === "DisTube" ? "" : `Discord.`}${this.construct.name}(${this.construct.params ? this.construct.params.map(p => p.name).join(", ") : ""})\`\`\``
+      value: `${formatDescription(this.construct.description)}\n\`\`\`js\nnew ${this.doc.repo === "DisTube" ? "" : `Discord.`}${this.construct.name}(${this.construct.params ? this.construct.params.map(p => p.optional ? `[${p.name}]` : p.name).join(", ") : ""})\`\`\``
     })
 
     if (this.construct.params) {
