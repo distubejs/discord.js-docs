@@ -12,19 +12,19 @@ const docCache = new Map()
 
 const DJS = 'discordjs'
 const AKAIRO = 'discord-akairo'
-const DISTUBE = 'DisTube'
+const DT = 'DisTube'
 
-function dissectURL (url) {
+function dissectURL(url) {
   const parts = url.slice(34).split('/')
   return [parts[0], parts[1], parts[3].slice(0, -5)]
 }
 
 class Doc extends DocBase {
-  constructor (url, docs) {
+  constructor(url, docs) {
     super(docs)
     this.url = url
 
-    ;[this.project, this.repo, this.branch] = dissectURL(url)
+      ;[this.project, this.repo, this.branch] = dissectURL(url)
 
     this.adoptAll(docs.classes, DocClass)
     this.adoptAll(docs.typedefs, DocTypedef)
@@ -42,12 +42,12 @@ class Doc extends DocBase {
     })
   }
 
-  get repoURL () {
+  get repoURL() {
     return `https://github.com/${this.project}/${this.repo}/blob/${this.branch}`
   }
 
-  get baseURL () {
-    if (this.repo === DISTUBE) return "https://distube.js.org"
+  get baseURL() {
+    if (this.repo === DT) return "https://distube.js.org" + (this.branch === "master" ? "" : ("/" + this.branch))
     switch (this.project) {
       case DJS: return 'https://discord.js.org'
       case AKAIRO: return 'https://discord-akairo.github.io'
@@ -55,21 +55,21 @@ class Doc extends DocBase {
     }
   }
 
-  get baseDocsURL () {
+  get baseDocsURL() {
     if (!this.baseURL) return null
-    if (this.repo === DISTUBE) return this.baseURL
+    if (this.repo === DT) return this.baseURL
     const repo = ['discord.js', AKAIRO].includes(this.repo) ? 'main' : this.repo
     return `${this.baseURL}/#/docs/${repo}/${this.branch}`
   }
 
-  get icon () {
-    if (this.repo === DISTUBE) return "https://cdn.jsdelivr.net/gh/skick1234/MaBu-CDN@4.2/DisTube/img/DisTube.png";
+  get icon() {
+    if (this.repo === DT) return "https://cdn.jsdelivr.net/gh/skick1234/MaBu-CDN@4.2/DisTube/img/DisTube.png";
     if (!this.baseURL) return null
     return `${this.baseURL}/favicon.ico`
   }
 
-  get color () {
-    if (this.repo === DISTUBE) return 0x00ffff
+  get color() {
+    if (this.repo === DT) return 0x00ffff
     switch (this.project) {
       case DJS: return 0x2296f3
       case AKAIRO: return 0x87202f
@@ -77,7 +77,7 @@ class Doc extends DocBase {
     }
   }
 
-  get (...terms) {
+  get(...terms) {
     terms = terms
       .filter(term => term)
       .map(term => term.toLowerCase())
@@ -96,7 +96,7 @@ class Doc extends DocBase {
     return elem
   }
 
-  search (query, { excludePrivateElements } = {}) {
+  search(query, { excludePrivateElements } = {}) {
     const result = this.fuse.search(query)
     if (!result.length) return null
 
@@ -111,7 +111,7 @@ class Doc extends DocBase {
     return filtered
   }
 
-  resolveEmbed (query, options = {}) {
+  resolveEmbed(query, options = {}) {
     const element = this.get(...query.split(/\.|#/))
     if (element) return element.embed(options)
 
@@ -124,7 +124,7 @@ class Doc extends DocBase {
     return embed
   }
 
-  toFuseFormat () {
+  toFuseFormat() {
     const parents = Array.from(this.children.values())
 
     const children = parents
@@ -139,7 +139,7 @@ class Doc extends DocBase {
     return formattedParents.concat(formattedChildren)
   }
 
-  toJSON () {
+  toJSON() {
     const json = {}
 
     for (const key of ['classes', 'typedefs', 'interfaces']) {
@@ -150,7 +150,7 @@ class Doc extends DocBase {
     return json
   }
 
-  baseEmbed () {
+  baseEmbed() {
     const title = {
       'DisTube': 'DisTube Documentation',
       'discord.js': 'Discord.js Documentation',
@@ -170,7 +170,7 @@ class Doc extends DocBase {
     }
   }
 
-  formatType (types) {
+  formatType(types) {
     const typestring = types
       .map((text, index) => {
         if (/<|>|\*/.test(text)) {
@@ -190,7 +190,7 @@ class Doc extends DocBase {
     return `**${typestring}**`
   }
 
-  static getRepoURL (id) {
+  static getRepoURL(id) {
     const [name, branch] = id.split('/')
     const project = {
       main: 'discord.js',
@@ -201,11 +201,11 @@ class Doc extends DocBase {
     return `https://github.com/discordjs/${project}/blob/${branch}/`
   }
 
-  static sources () {
+  static sources() {
     return sources
   }
 
-  static async fetch (sourceName, { force } = {}) {
+  static async fetch(sourceName, { force } = {}) {
     const url = sources[sourceName] || sourceName
     if (!force && docCache.has(url)) return docCache.get(url)
 
