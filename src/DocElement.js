@@ -296,9 +296,16 @@ class DocElement extends DocBase {
     if (!text) return ''
 
     return text
-      .replace(/\{@link (.+?)\}/g, (match, name) => {
-        const element = this.doc.get(...name.replace("event:", "").split(/\.|#/))
-        return element ? element.link : name
+      .replace(/\{@link (.+?)\}/g, (match, string) => {
+        // const [url, ...text] = string.split(/\|| /); // slower ~40% than substr
+        const pos = string.search(/\|| /);
+        let url, text;
+        if (pos !== -1) {
+          url = string.substr(0, pos);
+          text = string.substr(pos + 1);
+        } else url = string;
+        const element = this.doc.get(...url.replace("event:", "").split(/\.|#/))
+        return `[${element ? element.formattedName : (text || url)}](${element ? element.url : url})`
       })
       .replace(/(```[^]+?```)|(^[*-].+$)?\n(?![*-])/gm, (match, codeblock, hasListBefore) => {
         if (codeblock) return codeblock
