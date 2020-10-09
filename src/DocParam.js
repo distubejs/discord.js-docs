@@ -8,7 +8,8 @@ class DocParam extends DocElement {
   }
 
   get formattedName () {
-    return this.optional ? `\`[${this.name}]\`` : `\`${this.name}\``
+    let name = this.optional ? `\`[${this.name}]\`` : `\`${this.name}\``
+    return this.deprecated ? `~~${name}~~` : name
   }
 
   get url () {

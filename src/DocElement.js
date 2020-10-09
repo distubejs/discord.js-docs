@@ -226,6 +226,7 @@ class DocElement extends DocBase {
     const params = this.params.map(param => {
       return stripIndents`
         ${param.formattedName} ${param.formattedType}
+        ${param.deprecated ? '**DEPRECATED**' : ''}
         ${param.formattedDescription}
       `
     })
