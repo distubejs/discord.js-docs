@@ -179,7 +179,7 @@ class DocElement extends DocBase {
     if (!this.methods && !this.events) {
       props = props.map(prop => {
         return stripIndents`
-          ${prop.embedName} ${prop.formattedType}
+          ${prop.embedName} ${prop.formattedType}${prop.deprecated ? '\n**DEPRECATED**' : ''}
           ${prop.formattedDescription}
         `
       })
@@ -225,8 +225,7 @@ class DocElement extends DocBase {
     if (!this.params) return
     const params = this.params.map(param => {
       return stripIndents`
-        ${param.formattedName} ${param.formattedType}
-        ${param.deprecated ? '**DEPRECATED**' : ''}
+        ${param.formattedName} ${param.formattedType}${param.deprecated ? '\n**DEPRECATED**' : ''}
         ${param.formattedDescription}
       `
     })

@@ -13,7 +13,8 @@ class DocProp extends DocElement {
   }
 
   get embedName() {
-    return this.optional ? `\`[${this.name}]\`` : `\`${this.name}\``
+    let name = this.optional ? `\`[${this.name}]\`` : `\`${this.name}\``
+    return this.deprecated ? `~~${name}~~` : name
   }
 }
 
