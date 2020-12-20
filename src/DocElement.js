@@ -22,6 +22,26 @@ class DocElement extends DocBase {
     this.deprecated = data.deprecated || false
     this.access = data.access || 'public'
   }
+  get embedPrefix() {
+    const { types } = DocElement
+    const emoji = char => `:regional_indicator_${char}:`
+
+    switch (this.docType) {
+      case types.CLASS: return emoji('c')
+      case types.EVENT: return emoji('e')
+      case types.INTERFACE: return emoji('i')
+      case types.METHOD: return emoji('m')
+      case types.TYPEDEF: return emoji('t')
+      case types.PROP: return emoji('p')
+      default: return null
+    }
+  }
+
+  get anchor() {
+    if (this.static) return 's-'
+    else if (this.docType === DocElement.types.EVENT) return 'e-'
+    return null
+  }
 
   get url() {
     if (!this.doc.baseDocsURL) return null
@@ -32,7 +52,7 @@ class DocElement extends DocBase {
         : `${this.parent.name}#${this.static ? '.' : this.docType === DocBase.types.EVENT ? "event:" : ''}${this.name}`
       : `${this.docType === DocBase.types.TYPEDEF ? "global#" : ""}${this.name}`
     else path = this.parent
-      ? `${this.parent.docType}/${this.parent.name}?scrollTo=${this.static ? 's-' : ''}${this.name}`
+      ? `${this.parent.docType}/${this.parent.name}?scrollTo=${this.anchor || ''}${this.name}`
       : `${this.docType}/${this.name}`
 
     return `${this.doc.baseDocsURL}/${path}`
