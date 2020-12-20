@@ -5,11 +5,17 @@ class DocParam extends DocElement {
     super(parent.doc, DocElement.types.PARAM, data, parent)
     this.type = data.type.flat(5)
     this.optional = data.optional
+    this.variable = data.variable
   }
 
   get formattedName () {
     let name = this.optional ? `\`[${this.name}]\`` : `\`${this.name}\``
     return this.deprecated ? `~~${name}~~` : name
+  }
+
+  get formattedType () {
+    if (!this.variable) return super.formattedType
+    return super.formattedType.split('|').map(param => `...${param}`).join('|')
   }
 
   get url () {
