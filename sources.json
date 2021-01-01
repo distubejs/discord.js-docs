@@ -6,6 +6,6 @@
   "akairo": "https://raw.githubusercontent.com/discord-akairo/discord-akairo/docs/stable.json",
   "akairo-master": "https://raw.githubusercontent.com/discord-akairo/discord-akairo/docs/master.json",
   "collection": "https://raw.githubusercontent.com/discordjs/collection/docs/master.json",
-  "DisTube": "https://raw.githubusercontent.com/skick1234/DisTube/gh-pages/master.json",
-  "DisTube-Beta": "https://raw.githubusercontent.com/skick1234/DisTube/gh-pages/beta.json"
+  "DisTube": "https://raw.githubusercontent.com/distubejs/distubejs.github.io/master/master.json",
+  "DisTube-Beta": "https://raw.githubusercontent.com/distubejs/distubejs.github.io/master/beta.json"
 }
