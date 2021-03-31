@@ -57,8 +57,7 @@ class Doc extends DocBase {
 
   get baseDocsURL() {
     if (!this.baseURL) return null
-    if (this.repo === DT) return this.baseURL
-    const repo = ['discord.js', AKAIRO].includes(this.repo) ? 'main' : this.repo
+    const repo = ['discord.js', AKAIRO, DT].includes(this.repo) ? 'main' : this.repo
     return `${this.baseURL}/#/docs/${repo}/${this.branch}`
   }
 
@@ -69,10 +68,10 @@ class Doc extends DocBase {
   }
 
   get color() {
-    if (this.repo === DT) return 0x00ffff
     switch (this.project) {
       case DJS: return 0x2296f3
       case AKAIRO: return 0x87202f
+      case DT: return 0x00ffff
       default: return null
     }
   }

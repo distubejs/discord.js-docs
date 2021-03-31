@@ -9,7 +9,7 @@ class DocEvent extends DocElement {
   }
 
   get formattedName () {
-    return `${this.parent.name}#event:${this.name}`
+    return `${this.parent.name}#${this.name}`
   }
 }
 
