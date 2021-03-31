@@ -49,7 +49,7 @@ class DocElement extends DocBase {
     const path = this.parent
       ? `${this.parent.docType}/${this.parent.name}?scrollTo=${this.anchor || ''}${this.name}`
       : `${this.docType}/${this.name}`
-
+      
     return `${this.doc.baseDocsURL}/${path}`
   }
 

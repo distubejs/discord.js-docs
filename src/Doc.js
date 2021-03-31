@@ -13,6 +13,7 @@ const docCache = new Map()
 const DJS = 'discordjs'
 const AKAIRO = 'discord-akairo'
 const DT = 'DisTube'
+const SKICK = 'skick1234'
 
 function dissectURL(url) {
   const parts = url.slice(34).split('/')
@@ -50,14 +51,14 @@ class Doc extends DocBase {
     switch (this.project) {
       case DJS: return 'https://discord.js.org'
       case AKAIRO: return 'https://discord-akairo.github.io'
-      case DT: return 'https://distube.js.org'
+      case SKICK: return 'https://distube.js.org'
       default: return null
     }
   }
 
   get baseDocsURL() {
     if (!this.baseURL) return null
-    const repo = ['discord.js', AKAIRO, DT].includes(this.repo) ? 'main' : this.repo
+    const repo = ['discord.js', AKAIRO].includes(this.repo) ? 'main' : this.repo
     return `${this.baseURL}/#/docs/${repo}/${this.branch}`
   }
 
@@ -71,12 +72,12 @@ class Doc extends DocBase {
     switch (this.project) {
       case DJS: return 0x2296f3
       case AKAIRO: return 0x87202f
-      case DT: return 0x00ffff
+      case SKICK: return 0x00ffff
       default: return null
     }
   }
 
-  get (...terms) {
+  get(...terms) {
     const exclude = Array.isArray(terms[0]) ? terms.shift() : []
     terms = terms
       .filter(term => term)
