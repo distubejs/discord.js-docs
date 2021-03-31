@@ -46,12 +46,7 @@ class DocElement extends DocBase {
   get url() {
     if (!this.doc.baseDocsURL) return null
 
-    let path;
-    if (this.doc.repo === "DisTube") path = this.parent
-      ? this.parent.docType === DocBase.types.TYPEDEF ? `global#${this.parent.name}`
-        : `${this.parent.name}#${this.static ? '.' : this.docType === DocBase.types.EVENT ? "event:" : ''}${this.name}`
-      : `${this.docType === DocBase.types.TYPEDEF ? "global#" : ""}${this.name}`
-    else path = this.parent
+    const path = this.parent
       ? `${this.parent.docType}/${this.parent.name}?scrollTo=${this.anchor || ''}${this.name}`
       : `${this.docType}/${this.name}`
 

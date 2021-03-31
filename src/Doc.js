@@ -47,10 +47,10 @@ class Doc extends DocBase {
   }
 
   get baseURL() {
-    if (this.repo === DT) return "https://distube.js.org" + (this.branch === "master" ? "" : ("/" + this.branch))
     switch (this.project) {
       case DJS: return 'https://discord.js.org'
       case AKAIRO: return 'https://discord-akairo.github.io'
+      case DT: return 'https://distube.js.org'
       default: return null
     }
   }
