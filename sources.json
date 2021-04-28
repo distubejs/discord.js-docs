@@ -7,5 +7,5 @@
   "akairo-master": "https://raw.githubusercontent.com/discord-akairo/discord-akairo/docs/master.json",
   "collection": "https://raw.githubusercontent.com/discordjs/collection/docs/master.json",
   "DisTube": "https://raw.githubusercontent.com/skick1234/DisTube/docs/v2.json",
-  "DisTube-Beta": "https://raw.githubusercontent.com/skick1234/DisTube/docs/v3-beta.json"
+  "DisTube-Beta": "https://raw.githubusercontent.com/skick1234/DisTube/docs/beta.json"
 }
